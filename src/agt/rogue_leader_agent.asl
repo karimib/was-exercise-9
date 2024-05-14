@@ -1,6 +1,13 @@
 // rogue leader agent is a type of sensing agent
 
-/* Initial goals */
+/* Initial beliefs & goals */
+// Here we store the witness ratings of the rogue leader agent
+// that it has for the other agents.
+all_present_agents_witness_ratings(
+  [sensing_agent_1, sensing_agent_2, sensing_agent_3, sensing_agent_4, sensing_agent_5, sensing_agent_6, sensing_agent_7, sensing_agent_8, sensing_agent_9],
+  [-1, -1, -1, -1, 1, 1, 1, 1, 1]
+).
+
 !set_up_plans. // the agent has the goal to add pro-rogue plans
 
 /* 
@@ -17,11 +24,31 @@
   .relevant_plans({ -!read_temperature }, _, LL2);
   .remove_plan(LL2);
 
+  // adds a new plan for sending a witness_reputation to the acting agent,
+  // when the agent receives a temperature reading from another temperature reader agent.
+  .add_plan({ +temperature(Celsius)[source(Sender)] : true <-
+    .print("Received temperature reading from ", Sender, ": ", Celsius);
+    // Sending witness_reputation to the acting agent
+    .findall([Agents, WRRatings], all_present_agents_witness_ratings(Agents, WRRatings), WRRatingsList);
+    .nth(0, WRRatingsList, WR);
+    .nth(0, WR, Agents);
+    .nth(1, WR, WRRatings);
+    .my_name(Name);
+    for ( .range(I,0,8) ) {
+      .nth(I, Agents, Agent);
+      .nth(I, WRRatings, WRRating);
+      if (Sender == Agent & Agent \== Name) {
+        .print("Sending witness reputation to acting_agent: witness_reputation(", Name, ", ", Agent, ", temperature(", Celsius, "), ", WRRating, ")");
+          .send(acting_agent, tell, witness_reputation(Name, Agent, temperature(Celsius), WRRating));
+      };
+    };
+  });
+
   // adds a new plan for always broadcasting the temperature -2
   .add_plan({ +!read_temperature : true
     <-
       .print("Reading the temperature");
-      .print("Read temperature (Celcious): ", -2);
+      .print("Read temperature (Celcius): ", -2);
       .broadcast(tell, temperature(-2))}).
 
 /* Import behavior of sensing agent */

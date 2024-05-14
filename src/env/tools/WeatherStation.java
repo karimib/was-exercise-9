@@ -20,19 +20,19 @@ public class WeatherStation extends Artifact {
 
     @OPERATION
     public void readCurrentTemperature(Object latitude, Object longitude, OpFeedbackParam<Double> temperature) {
-        String endpoint = WEATHER_ENDPOINT 
-            + "?latitude=" +  String.valueOf(latitude) 
-            + "&longitude=" + String.valueOf(longitude)
-            + "&current_weather=true";
-        
+        String endpoint = WEATHER_ENDPOINT
+                + "?latitude=" + String.valueOf(latitude)
+                + "&longitude=" + String.valueOf(longitude)
+                + "&current_weather=true";
+
         try {
             URI uri = new URI(endpoint);
-            
+
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .GET()
-                .build();
-             
+                    .uri(uri)
+                    .GET()
+                    .build();
+
             HttpClient client = HttpClient.newHttpClient();
             try {
                 System.out.println(request.toString());
@@ -42,7 +42,8 @@ public class WeatherStation extends Artifact {
                 }
                 String responseBody = response.body();
                 JsonObject jsonObject = new Gson().fromJson(responseBody, JsonObject.class);
-                Double temperatureValue = jsonObject.getAsJsonObject("current_weather").getAsJsonPrimitive("temperature").getAsDouble();
+                Double temperatureValue = jsonObject.getAsJsonObject("current_weather")
+                        .getAsJsonPrimitive("temperature").getAsDouble();
                 System.out.print(temperatureValue);
                 temperature.set(temperatureValue);
             } catch (IOException e) {
@@ -55,5 +56,5 @@ public class WeatherStation extends Artifact {
         }
 
     }
-    
+
 }
